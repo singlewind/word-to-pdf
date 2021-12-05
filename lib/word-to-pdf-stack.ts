@@ -16,6 +16,15 @@ export class WordToPdfStack extends cdk.Stack {
       bucketName: 'word-to-pdf',
     })
 
+    const fontLayerVersion = new lambda.LayerVersion(this, 'fontLayer', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      code: lambda.Code.fromAsset('fonts'),
+      compatibleArchitectures: [
+        lambda.Architecture.X86_64,
+        lambda.Architecture.ARM_64,
+      ]
+    })
+
     const wordToPdfFunc = new nodejs.NodejsFunction(this, 'convert', {
       functionName: 'word-to-pdf-function',
       deadLetterQueueEnabled: true,
@@ -28,7 +37,7 @@ export class WordToPdfStack extends cdk.Stack {
         'FONTCONFIG_PATH': '/opt/etc/fonts',
       },
       layers: [
-        lambda.LayerVersion.fromLayerVersionArn(this, 'font', 'arn:aws:lambda:ap-southeast-2:347599033421:layer:stix-fonts:1'),
+        fontLayerVersion,
         lambda.LayerVersion.fromLayerVersionArn(this, 'libraoffice', 'arn:aws:lambda:ap-southeast-2:764866452798:layer:libreoffice-brotli:1')
       ],
       events: [
